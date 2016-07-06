@@ -118,13 +118,27 @@ xml`<plugin name="hints-ext" version="0.0.3"
 //}}}
 
 (function () {
-if (parseFloat(Application.version) < 4) return;
+
+// if (parseFloat(Application.version) < 4) return;
 
 var original = modules.hints;
 this.onUnload = function onUnload() {
     delete this.onUnload;
     modules.hints = original;
 };
+
+function iter_fmap(it, func, self) {
+    var res = [];
+    var SKIP = {};
+    if (!self) self = this;
+    for (var val in it) {
+        var a = func.call(self, val, SKIP);
+        if (a !== SKIP) {
+            res.push(a);
+        }
+    }
+    return res;
+}
 
 function HintsExt() {
     this.init();
@@ -423,7 +437,11 @@ _iterTags: function iterTag(win, screen) {
     }
     if (typeof(selector) == "string") {
         if (selector[0] == "/") { // xpath
-            matcher = makeMatcher((e for(e in util.evaluateXPath(selector, doc, null, true))));
+            let e, list = [];
+            let res = util.evaluateXPath(selector, doc, null, true);
+            while(e = res.iterateNext()) list[list.length] = e;
+            matcher = makeMatcher(list);
+            // matcher = makeMatcher((e for(e in util.evaluateXPath(selector, doc, null, true))));
         } else { // selector
             matcher = function (node) node.mozMatchesSelector(selector);
         }
@@ -861,7 +879,8 @@ onEvent: function onEvent(event) {
     moveActiveHint: function moveActiveHint(count) {
         if (!count) count = 10;
         var startTime = Date.now();
-        var items = [i for(i of this._validHints) if (i.label.style.display === "")];
+        var items = itr_fmap(this._validHints, (i) => i.label.style.display === "");
+        // var items = [i for(i of this._validHints) if (i.label.style.display === "")];
         var last = items.length - 1;
         var oldNumber = this._hintNumber || 1;
 
@@ -1105,6 +1124,8 @@ this.Rect = HintsExt.Rect = function (left, top, right, bottom) ({
     right: right,
     bottom: bottom,
 });
+
+let Hints = hints.__class__;
 
 let src = Hints.prototype._processHints.toSource()
     .replace("this._validHints[activeIndex];", "this._validHints[activeIndex].elem;")
