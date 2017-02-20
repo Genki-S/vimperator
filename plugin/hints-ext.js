@@ -292,6 +292,19 @@ _show: function _show(kwargs) {
         this._reset();
     }
 },
+
+canHandleKey: function(key) {
+    return (
+        ["<Return>", "<Tab>", "<S-Tab>", mappings.getMapLeader()].indexOf(key) > -1 ||
+        (key == "<BS>" && hints._prevInput === "number") ||
+        (
+            hints._isHintNumber(key) &&
+            !hints.escNumbers &&
+            (key !== options.hintchars[0] || this._prevInput === "number")
+        )
+    );
+},
+
 _showHints: function () {
     let pageHints = this._pageHints;
     let hintString = this._hintString;
