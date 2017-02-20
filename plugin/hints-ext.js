@@ -298,9 +298,9 @@ canHandleKey: function(key) {
         ["<Return>", "<Tab>", "<S-Tab>", mappings.getMapLeader()].indexOf(key) > -1 ||
         (key == "<BS>" && hints._prevInput === "number") ||
         (
-            hints._isHintNumber(key) &&
-            !hints.escNumbers &&
-            (key !== options.hintchars[0] || this._prevInput === "number")
+            hints._isHintNumber(key)
+            // !hints.escNumbers &&
+            // (key !== options.hintchars[0] || this._prevInput === "number")
         )
     );
 },
